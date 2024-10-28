@@ -1,76 +1,87 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
-import main  # Importar las funciones desde main.py
-import os
+from excel_functions import cargar_archivo_excel
+from matriculas_functions import buscar_modelo_matricula
+import threading
+
+def mostrar_mensaje(text_widget, mensaje):
+    text_widget.delete(1.0, tk.END)
+    text_widget.insert(tk.END, mensaje)
 
 # Función para mostrar el modelo del coche a partir de la matrícula ingresada
-def mostrar_modelo():
+def mostrar_modelo(entry_matricula, result_text):
     matricula = entry_matricula.get()
     if matricula:
-        modelo = main.buscar_modelo_matricula(matricula)  # Asegúrate de que esto esté bien vinculado
-        result_text.delete(1.0, tk.END)  # Limpiar el cuadro de texto
-        result_text.insert(tk.END, modelo)  # Insertar el resultado
+        modelo = buscar_modelo_matricula(matricula, result_text)  # Se pasa result_text para mostrar el resultado
     else:
-        messagebox.showwarning("Advertencia", "Por favor, ingresa una matrícula.")
+        mostrar_mensaje(result_text, "Por favor, ingresa una matrícula.")
 
-# Función para cargar un archivo Excel, buscar los modelos, y guardar un nuevo archivo
-def cargar_archivo_excel():
+# Función para manejar la búsqueda en un hilo
+def iniciar_busqueda(entry_matricula, result_text):
+    # Deshabilitar el botón de búsqueda y habilitar el botón de stop
+    btn_buscar.config(state=tk.DISABLED)
+    btn_stop.config(state=tk.NORMAL)
+
+    # Ejecutar búsqueda
+    mostrar_modelo(entry_matricula, result_text)
+
+    # Volver a habilitar el botón de búsqueda
+    btn_buscar.config(state=tk.NORMAL)
+    btn_stop.config(state=tk.DISABLED)
+
+# Función para cargar un archivo Excel
+def cargar_archivo():
     filepath = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])
     if filepath:
         try:
-            # Procesar el archivo Excel
-            df = main.procesar_archivo_excel(filepath)
-
-            # Modificar el nombre del archivo para que incluya "_modelos" antes de la extensión
-            filename, file_extension = os.path.splitext(filepath)
-            save_filepath = f"{filename}_modelos{file_extension}"
-
-            # Guardar el nuevo archivo Excel con el nuevo nombre
-            df.to_excel(save_filepath, index=False)
-            messagebox.showinfo("Éxito", f"Archivo guardado correctamente en: {save_filepath}")
-
+            df = cargar_archivo_excel(filepath, result_text)
+            mostrar_mensaje(result_text, f"Archivo guardado correctamente en {filepath} \n {len(df)} matrículas procesadas.")
         except Exception as e:
-            messagebox.showerror("Error", f"Hubo un problema al procesar el archivo: {e}")
+            mostrar_mensaje(result_text, f"Hubo un problema al procesar el archivo: {e}")
 
-# Configuración de la interfaz gráfica
-root = tk.Tk()
-root.title("Buscador de modelos")
-root.geometry("650x200")
+# Función para crear la interfaz gráfica
+def crear_interfaz():
+    global entry_matricula, result_text, btn_buscar, btn_stop
 
-# Usar un grid para organizar elementos
-root.columnconfigure(0, weight=1)
-root.columnconfigure(1, weight=1)
+    # Configuración de la interfaz gráfica
+    root = tk.Tk()
+    root.title("Buscador de modelos")
+    root.geometry("650x200")
 
-# Primera columna: Entrada de matrícula, botón de buscar, y botón para cargar Excel
-frame_izquierdo = tk.Frame(root)
-frame_izquierdo.grid(row=0, column=0, padx=10, pady=10)
+    # Usar un grid para organizar elementos
+    root.columnconfigure(0, weight=1)
+    root.columnconfigure(1, weight=1)
 
-# Cuadro de texto para introducir matrícula
-label_matricula = tk.Label(frame_izquierdo, text="Matrícula:")
-label_matricula.grid(row=1, column=0, padx=10, pady=5, sticky="w")
+    # Primera columna: Entrada de matrícula, botón de buscar, y botón para cargar Excel
+    frame_izquierdo = tk.Frame(root)
+    frame_izquierdo.grid(row=0, column=0, padx=10, pady=10)
 
-# Cuadro de texto con menor ancho
-entry_matricula = tk.Entry(frame_izquierdo, width=20)
-entry_matricula.grid(row=1, column=1, pady=5, padx=10)
+    # Cuadro de texto para introducir matrícula
+    label_matricula = tk.Label(frame_izquierdo, text="Matrícula:")
+    label_matricula.grid(row=1, column=0, padx=10, pady=5, sticky="w")
 
-# Botón para buscar el modelo del coche (ahora alineado a la derecha del cuadro de texto)
-btn_buscar = tk.Button(frame_izquierdo, text="Buscar", command=mostrar_modelo)
-btn_buscar.grid(row=1, column=2, padx=10, pady=5)  # Colocar en la misma fila (row=1) y en la siguiente columna (column=1)
+    # Cuadro de texto con menor ancho
+    entry_matricula = tk.Entry(frame_izquierdo, width=20)
+    entry_matricula.grid(row=1, column=1, pady=5, padx=10)
 
-# Botón para cargar el archivo Excel (alineado a la izquierda)
-btn_cargar_excel = tk.Button(frame_izquierdo, text="Cargar archivo Excel", command=cargar_archivo_excel)
-btn_cargar_excel.grid(row=2, column=0, pady=10, padx=10, columnspan=2, sticky="w")  # Añadido sticky="w" para alinearlo a la izquierda
+    # Botón para buscar el modelo del coche
+    btn_buscar = tk.Button(frame_izquierdo, text="Buscar", command=lambda: threading.Thread(target=iniciar_busqueda, args=(entry_matricula, result_text)).start())
+    btn_buscar.grid(row=1, column=2, padx=10, pady=5)
 
-# Segunda columna: Cuadro de texto para mostrar el modelo
-frame_derecho = tk.Frame(root)
-frame_derecho.grid(row=0, column=1, padx=0, pady=10, rowspan=4)
+    # Botón para cargar el archivo Excel
+    btn_cargar_excel = tk.Button(frame_izquierdo, text="Cargar archivo Excel", command=cargar_archivo)
+    btn_cargar_excel.grid(row=2, column=0, pady=10, padx=10, columnspan=2, sticky="w")
 
-#label_modelo = tk.Label(frame_derecho, text="Modelo:")
-#label_modelo.grid(row=0, column=0, pady=5, sticky="w")
+    # Botón de stop para detener el hilo de búsqueda
+    btn_stop = tk.Button(frame_izquierdo, text="Stop", bg="red", command=None)  # Inicialmente sin funcionalidad
+    btn_stop.grid(row=2, column=2, padx=10, pady=5)
 
-# Añadir margen horizontal con padx=20 y margen inferior con pady=10
-result_text = tk.Text(frame_derecho, width=40, height=10)
-result_text.grid(row=1, column=0, pady=10, padx=00)  # Añadido padx para margen lateral y pady(5, 10) para margen inferior
+    # Segunda columna: Cuadro de texto para mostrar el modelo
+    frame_derecho = tk.Frame(root)
+    frame_derecho.grid(row=0, column=1, padx=0, pady=10, rowspan=4)
 
-# Ejecutar la interfaz
-root.mainloop()
+    result_text = tk.Text(frame_derecho, width=40, height=10)
+    result_text.grid(row=1, column=0, pady=10, padx=00)
+
+    # Ejecutar la interfaz
+    root.mainloop()
