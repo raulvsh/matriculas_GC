@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from excel_functions import cargar_archivo_excel
+from excel_functions import procesar_archivo_excel
 from matriculas_functions import buscar_modelos_matriculas
 import threading
 
@@ -12,7 +12,12 @@ def mostrar_mensaje(text_widget, mensaje):
 def mostrar_modelo(entry_matricula, result_text):
     matricula = entry_matricula.get()
     if matricula:
-        modelo = buscar_modelos_matriculas(matricula, result_text)  # Se pasa result_text para mostrar el resultado
+        modelo = buscar_modelos_matriculas([matricula]) 
+        
+        if modelo:
+            mostrar_mensaje(result_text, modelo[matricula])
+        else:
+            mostrar_mensaje(result_text, "No se encontró el modelo.")
     else:
         mostrar_mensaje(result_text, "Por favor, ingresa una matrícula.")
 
@@ -34,7 +39,7 @@ def cargar_archivo():
     filepath = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])
     if filepath:
         try:
-            df = cargar_archivo_excel(filepath, result_text)
+            df = procesar_archivo_excel(filepath, result_text)
             mostrar_mensaje(result_text, f"Archivo guardado correctamente en {filepath} \n {len(df)} matrículas procesadas.")
         except Exception as e:
             mostrar_mensaje(result_text, f"Hubo un problema al procesar el archivo: {e}")

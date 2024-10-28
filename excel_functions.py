@@ -3,7 +3,7 @@ import pandas as pd
 from matriculas_functions import buscar_modelos_matriculas  # Cambiar la función importada
 
 # Función para procesar un archivo Excel y buscar los modelos de las matrículas
-def cargar_archivo_excel(filepath, result_text):
+def procesar_archivo_excel(filepath, result_text):
     try:
         df = pd.read_excel(filepath)
 
@@ -26,6 +26,7 @@ def cargar_archivo_excel(filepath, result_text):
         filename, file_extension = os.path.splitext(filepath)
         save_filepath = f"{filename}_modelos{file_extension}"
         df.to_excel(save_filepath, index=False)
+        print("df ",df)
         return df
     except Exception as e:
         raise e
