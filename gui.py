@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from excel_functions import cargar_archivo_excel
-from matriculas_functions import buscar_modelo_matricula
+from matriculas_functions import buscar_modelos_matriculas
 import threading
 
 def mostrar_mensaje(text_widget, mensaje):
@@ -12,7 +12,7 @@ def mostrar_mensaje(text_widget, mensaje):
 def mostrar_modelo(entry_matricula, result_text):
     matricula = entry_matricula.get()
     if matricula:
-        modelo = buscar_modelo_matricula(matricula, result_text)  # Se pasa result_text para mostrar el resultado
+        modelo = buscar_modelos_matriculas(matricula, result_text)  # Se pasa result_text para mostrar el resultado
     else:
         mostrar_mensaje(result_text, "Por favor, ingresa una matrícula.")
 
