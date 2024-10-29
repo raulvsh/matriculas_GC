@@ -43,6 +43,5 @@ def iniciar_proceso(tipo, result_text, btn_stop):
 
         #mostrar_mensaje(result_text, f"Archivo procesado correctamente en {save_filepath}")
     except Exception as e:
-        #mostrar_mensaje(result_text, f"Hubo un problema al procesar el archivo: {e}")
         #result_text.insert(tk.END, f"Hubo un problema al procesar el archivo: {e}")
         print("Exception", e)

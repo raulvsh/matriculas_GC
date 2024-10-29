@@ -99,8 +99,12 @@ def buscar_modelos_autodoc(matriculas):
 
 def buscar_modelos_carfax(matriculas):
     resultados = {}
+    stop_flag[0]=False
+
     for matricula in matriculas:
         if stop_flag[0]:  # Verificar si se debe detener
+            if driver:
+                driver.quit()
             break
         driver = None
         try:

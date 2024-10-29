@@ -75,7 +75,7 @@ def crear_interfaz():
     btn_cargar_carfax = tk.Button(
         frame_izquierdo,
         text="Cargar archivo",
-        command=lambda: iniciar_proceso("carfax", result_text, btn_stop)
+        command=lambda: threading.Thread(target=iniciar_proceso, args=("carfax", result_text, btn_stop)).start()
     )
     btn_cargar_carfax.grid(row=4, column=1, pady=10, padx=10, columnspan=2, sticky="w")
 
