@@ -15,8 +15,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 import tkinter as tk
-
-stop_flag = [False]  # Lista mutable para compartir entre hilos
+from global_vars import stop_flag
 
 def iniciar_driver():
     return webdriver.Chrome()  # O el driver que estés utilizando
@@ -30,24 +29,22 @@ def permitir_cookies(driver):
 
 def buscar_modelos_autodoc(matriculas):
     resultados = {}
+    stop_flag[0]=False
     for matricula in matriculas:
         if stop_flag[0]:  # Verificar si se debe detener
+            if driver:
+                driver.quit()
             break
         driver = None
         try:
             driver = iniciar_driver()
             driver.get("https://www.autodoc.es/")
-            #permitir_cookies(driver)          
+            #permitir_cookies(driver)   #Tarda más si se permiten las cookies, no es necesario          
 
             # Espera hasta que el campo de búsqueda esté presente (Autodoc)
             search_box = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.ID, "kba1"))
             )
-
-            # Espera hasta que el campo de búsqueda esté presente (Carfax)
-            #search_box = WebDriverWait(driver, 10).until(
-            #    EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Introduce matrícula o bastidor']"))
-            #)
 
             search_box.clear() 
             search_box.send_keys(matricula)
@@ -56,11 +53,11 @@ def buscar_modelos_autodoc(matriculas):
             # Temporizador para esperar hasta que el título cambie
             start_time = time.time()
             original_title = "AUTODOC España - tienda online de recambios coche con más de 4 millones de repuestos coches"
-            #original_title = "Comprueba la matrícula y obtén el historial del coche | CARFAX"
-
             title_changed = False
 
             while time.time() - start_time < 6:  # Espera hasta 6 segundos
+                if stop_flag[0]:  # Verificar si se debe detener durante la espera
+                    break
                 current_title = driver.title
                 if current_title != original_title:
                     title_changed = True
@@ -72,19 +69,15 @@ def buscar_modelos_autodoc(matriculas):
                 modelo = current_title.split(" | ")[0]
                 modelo = modelo.replace("Recambios ", "").strip()
                 resultados[matricula] = modelo  # Almacena el resultado
-
             else:
                 print(f"No se encontró modelo para la matrícula: {matricula} en 6 segundos.")
 
-
         except Exception as e:
             resultados[matricula] = f"Error: {str(e)}"
-            messagebox.showerror("Error", f"Error al abrir la página: {e}")
 
         finally:
             if driver:
                 driver.quit()
-
     return resultados  # Devuelve los resultados de las búsquedas
 
 
@@ -163,19 +156,13 @@ def buscar_modelos_carfax(matriculas):
 
     return resultados  # Devuelve los resultados de las búsquedas
 
-# Función para manejar la búsqueda en un hilo
-def busqueda_individual(entry_matricula, result_text):
-    # Obtener la matrícula del campo de entrada
+def busqueda_individual_autodoc(entry_matricula, result_text):
     matricula = entry_matricula.get()
 
-    # Ejecutar la búsqueda
     resultado = buscar_modelos_autodoc([matricula])
 
-    # Mostrar el resultado en result_text
     if matricula in resultado:
-        #result_text.delete(1.0, tk.END)  # Limpiar el texto existente
         result_text.insert(tk.END, f"Matrícula: {matricula}\n")
         result_text.insert(tk.END, f"Modelo: {resultado[matricula]}\n\n")
     else:
-        #result_text.delete(1.0, tk.END)
         result_text.insert(tk.END, "No se encontró el modelo para esta matrícula.")

@@ -1,9 +1,10 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox
-from excel_functions import seleccionar_archivo
+from matriculas_functions import busqueda_individual_autodoc
+from process_functions import iniciar_proceso
 import threading
-from matriculas_functions import busqueda_individual, stop_flag
-from process_functions import iniciar_proceso, stop_flag
+from global_vars import stop_flag 
+
+
 
 # Función para crear la interfaz gráfica
 def crear_interfaz():
@@ -39,21 +40,18 @@ def crear_interfaz():
     entry_matricula = tk.Entry(frame_izquierdo, width=20)
     entry_matricula.grid(row=1, column=1, pady=5, padx=10)
 
-# Función que maneja la búsqueda individual y simula el efecto visual del botón presionado
+    # Función que maneja la búsqueda individual y simula el efecto visual del botón presionado
     def on_enter_key(event, entry, result_text):
         btn_buscar.config(relief=tk.SUNKEN)  # Cambia el relieve para simular el botón presionado
         btn_buscar.update_idletasks()  # Actualiza la interfaz para que el cambio se vea de inmediato
-        busqueda_individual(entry, result_text)  # Llama a la función de búsqueda
+        busqueda_individual_autodoc(entry, result_text)  # Llama a la función de búsqueda
         # Usa after para restaurar el botón tras 100ms
         root.after(100, lambda: btn_buscar.config(relief=tk.RAISED))
 
     # Botón para buscar el modelo del coche
-    btn_buscar = tk.Button(frame_izquierdo, text="Buscar", command=lambda: busqueda_individual(entry_matricula, result_text))
+    btn_buscar = tk.Button(frame_izquierdo, text="Buscar", command=lambda: busqueda_individual_autodoc(entry_matricula, result_text))
     btn_buscar.grid(row=1, column=2, padx=10, pady=5)
     entry_matricula.bind("<Return>", lambda event: on_enter_key(event, entry_matricula, result_text))
-
-
-
 
     # Grupo de botones para Autodoc
     label_autodoc = tk.Label(frame_izquierdo, text="Autodoc:")
@@ -61,7 +59,7 @@ def crear_interfaz():
     btn_cargar_autodoc = tk.Button(
         frame_izquierdo,
         text="Cargar archivo",
-        command=lambda: iniciar_proceso("autodoc", result_text)
+        command=lambda: threading.Thread(target=iniciar_proceso, args=("autodoc", result_text, btn_stop)).start()
     )
     btn_cargar_autodoc.grid(row=2, column=1, pady=10, padx=10, columnspan=2, sticky="w")
 
@@ -84,7 +82,7 @@ def crear_interfaz():
 
     btn_stop = tk.Button(
         frame_izquierdo,
-        text="Stop",
+        text="STOP",
         bg="red",
         fg="white",
         command=lambda: toggle_stop(),
@@ -98,7 +96,6 @@ def crear_interfaz():
     def toggle_stop():
         stop_flag[0] = True
         btn_stop.grid_remove()  # Ocultar el botón después de pulsarlo
-
 
     # Ejecutar la interfaz
     root.mainloop()
