@@ -1,24 +1,22 @@
 import time
-from webbrowser import Chrome
 from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from tkinter import messagebox
-from bs4 import BeautifulSoup
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
-import time
 import tkinter as tk
 from global_vars import stop_flag
 
+
 def iniciar_driver():
-    return webdriver.Chrome()  # O el driver que estés utilizando
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Activar modo headless
+    chrome_options.add_argument("--no-sandbox")  # Para evitar problemas en entornos restringidos
+    chrome_options.add_argument("--disable-dev-shm-usage")  # Para evitar errores de memoria
+    chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36")
+
+    return webdriver.Chrome(options=chrome_options)  # O el driver que estés utilizando
 
 def permitir_cookies(driver):
     wait = WebDriverWait(driver, 10)  # Espera hasta 10 segundos
@@ -27,16 +25,21 @@ def permitir_cookies(driver):
     )
     allow_cookies_button.click()  # Haz clic en el botón
 
-def buscar_modelos_autodoc_es(matriculas):
+def buscar_modelos_autodoc_es(matriculas, progress_bar):
     resultados = {}
     stop_flag[0]=False
-    for matricula in matriculas:
+
+    config_progress_bar(matriculas, progress_bar)
+
+    for i, matricula in enumerate(matriculas):
         if stop_flag[0]:  # Verificar si se debe detener
             if driver:
                 driver.quit()
             break
         driver = None
         try:
+            update_progress_bar(progress_bar, i + 1, len(matriculas))
+
             driver = iniciar_driver()
             driver.get("https://www.autodoc.es/")
             #permitir_cookies(driver)   #Tarda más si se permiten las cookies, no es necesario          
@@ -78,9 +81,22 @@ def buscar_modelos_autodoc_es(matriculas):
         finally:
             if driver:
                 driver.quit()
-    return resultados  # Devuelve los resultados de las búsquedas
 
-def buscar_modelos_carfax(matriculas):
+    return resultados 
+
+def config_progress_bar(matriculas, progress_bar):
+    if len(matriculas) == 1:
+        progress_bar.config(mode='indeterminate')
+        progress_bar.start(10)  # Iniciar la barra de progreso indefinida
+    else:
+        progress_bar.config(mode='determinate'),
+
+def update_progress_bar(progress_bar, current, total):
+    progress_percentage = (current / total) * 100
+    progress_bar['value'] = progress_percentage-5
+    progress_bar.update_idletasks()
+
+'''def buscar_modelos_carfax(matriculas, progress_bar):
     resultados = {}
     stop_flag[0] = False
 
@@ -141,34 +157,23 @@ def buscar_modelos_carfax(matriculas):
                 driver.quit()
     
     return resultados  # Devuelve los resultados de las búsquedas
+    '''
 
-def busqueda_individual_autodoc(entry_matricula, result_text):
+def busqueda_individual_autodoc(entry_matricula, result_text, progress_bar):
     matricula = entry_matricula.get()
+    progress_bar.config(mode='indeterminate')
 
-    resultado = buscar_modelos_autodoc_es([matricula])
+    progress_bar.start(10)  # Iniciar la barra de progreso indefinida
+    resultado = buscar_modelos_autodoc_es([matricula], progress_bar)
 
     if matricula in resultado:
         result_text.insert(tk.END, f"Matrícula: {matricula}\n")
         result_text.insert(tk.END, f"Modelo: {resultado[matricula]}\n\n")
     else:
         result_text.insert(tk.END, "No se encontró el modelo para esta matrícula.")
+    progress_bar.stop()
 
 
-'''def buscar_modelos_regcheck(matriculas):
-        resultados = {}
-        username = "raulvsh@gmail.com"
-        for matricula in matriculas:
-            url = f"http://www.regcheck.org.uk/api/reg.asmx/CheckSpain?RegistrationNumber={matricula}&username={username}"
-            try:
-                response = requests.get(url)
-                print(f"Response: {response}, {response.text}")
-                if response.status_code == 200:
-                    resultados[matricula] = response.json().get("Model", "Modelo no encontrado")
-                else:
-                    resultados[matricula] = "Error en API"
-            except Exception as e:
-                resultados[matricula] = f"Error: {e}"
-        return resultados'''
 
 '''async def buscar_modelos_prueba(matriculas):
     print(matriculas)
