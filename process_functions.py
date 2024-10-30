@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from excel_functions import guardar_excel, leer_excel, mapear_resultados, seleccionar_archivo
-from matriculas_functions import buscar_modelos_autodoc_es, buscar_modelos_carfax
+from matriculas_functions import buscar_modelos_autodoc_es#, buscar_modelos_carfax
 
 def iniciar_proceso(tipo, result_text, btn_stop, progress_bar):
 

@@ -1,0 +1,1 @@
+('D:\\1-PROYECTOS\\matriculas_GC\\build\\main\\PYZ-00.pyz', [])

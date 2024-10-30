@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox  # Importar solo lo necesario
+from tkinter import ttk, messagebox 
 from matriculas_functions import busqueda_individual_autodoc
 from process_functions import iniciar_proceso
 import threading
