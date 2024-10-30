@@ -34,6 +34,7 @@ def iniciar_proceso(tipo, result_text, btn_stop, progress_bar):
         
         btn_stop.grid_remove()
         progress_bar.stop() 
+        progress_bar.config(mode='determinate')
 
         # Mapear resultados y guardar archivo procesado
         mapear_resultados(df, resultados)

@@ -162,7 +162,6 @@ def update_progress_bar(progress_bar, current, total):
 def busqueda_individual_autodoc(entry_matricula, result_text, progress_bar):
     matricula = entry_matricula.get()
     progress_bar.config(mode='indeterminate')
-
     progress_bar.start(10)  # Iniciar la barra de progreso indefinida
     resultado = buscar_modelos_autodoc_es([matricula], progress_bar)
 
@@ -172,6 +171,7 @@ def busqueda_individual_autodoc(entry_matricula, result_text, progress_bar):
     else:
         result_text.insert(tk.END, "No se encontró el modelo para esta matrícula.")
     progress_bar.stop()
+    progress_bar.config(mode='determinate')
 
 
 
