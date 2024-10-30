@@ -1,0 +1,1 @@
+pyinstaller --onefile --windowed --icon=.\assets\logo2.ico --clean --add-data "assets/logo2.ico;assets" --debug=all .\main.py

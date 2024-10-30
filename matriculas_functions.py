@@ -27,7 +27,7 @@ def permitir_cookies(driver):
 
 def buscar_modelos_autodoc_es(matriculas, progress_bar):
     resultados = {}
-    stop_flag[0]=False
+    stop_flag[0] = False
 
     config_progress_bar(matriculas, progress_bar)
 
@@ -38,25 +38,25 @@ def buscar_modelos_autodoc_es(matriculas, progress_bar):
             break
         driver = None
         try:
-            update_progress_bar(progress_bar, i + 1, len(matriculas))
-
+            update_progress_bar(progress_bar, (i+1/6), len(matriculas))
             driver = iniciar_driver()
             driver.get("https://www.autodoc.es/")
             #permitir_cookies(driver)   #Tarda más si se permiten las cookies, no es necesario          
+            update_progress_bar(progress_bar, (i+2/6), len(matriculas))
 
             # Espera hasta que el campo de búsqueda esté presente (Autodoc)
             search_box = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.ID, "kba1"))
             )
+            update_progress_bar(progress_bar, (i)+(3/6), len(matriculas))
 
-            search_box.clear() 
-            search_box.send_keys(matricula)
-            search_box.send_keys(Keys.RETURN)
+            clear_and_send_plate(matricula, search_box)
 
             # Temporizador para esperar hasta que el título cambie
             start_time = time.time()
             original_title = "AUTODOC España - tienda online de recambios coche con más de 4 millones de repuestos coches"
             title_changed = False
+            update_progress_bar(progress_bar, (i)+(4/6), len(matriculas))
 
             while time.time() - start_time < 6:  # Espera hasta 6 segundos
                 if stop_flag[0]:  # Verificar si se debe detener durante la espera
@@ -66,6 +66,7 @@ def buscar_modelos_autodoc_es(matriculas, progress_bar):
                     title_changed = True
                     break
                 time.sleep(1)  # Espera medio segundo antes de volver a verificar
+            update_progress_bar(progress_bar, (i)+(5/6), len(matriculas))
 
             # Extrae el modelo del vehículo si el título ha cambiado
             if title_changed:
@@ -74,6 +75,7 @@ def buscar_modelos_autodoc_es(matriculas, progress_bar):
                 resultados[matricula] = modelo  # Almacena el resultado
             else:
                 print(f"No se encontró modelo para la matrícula: {matricula} en 6 segundos.")
+            update_progress_bar(progress_bar, (i)+(6/6), len(matriculas))
 
         except Exception as e:
             resultados[matricula] = f"Error: {str(e)}"
@@ -83,6 +85,11 @@ def buscar_modelos_autodoc_es(matriculas, progress_bar):
                 driver.quit()
 
     return resultados 
+
+def clear_and_send_plate(matricula, search_box):
+    search_box.clear() 
+    search_box.send_keys(matricula)
+    search_box.send_keys(Keys.RETURN)
 
 def config_progress_bar(matriculas, progress_bar):
     if len(matriculas) == 1:
