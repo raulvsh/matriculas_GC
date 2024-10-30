@@ -1,7 +1,8 @@
 # Función para procesar según el tipo de web (autodoc o regcheck)
+import asyncio
 import tkinter as tk
 from excel_functions import guardar_excel, leer_excel, mapear_resultados, seleccionar_archivo
-from matriculas_functions import buscar_modelos_autodoc, buscar_modelos_carfax
+from matriculas_functions import buscar_modelos_autodoc_es, buscar_modelos_carfax#, buscar_modelos_prueba
 
 #stop_flag = [False]  # Resetear el flag
 
@@ -23,11 +24,13 @@ def iniciar_proceso(tipo, result_text, btn_stop):
 
         # Determinar la función de búsqueda según el tipo
         if tipo == "autodoc":
-            resultados = buscar_modelos_autodoc(matriculas)
+            resultados = buscar_modelos_autodoc_es(matriculas)
         #elif tipo == "regcheck":
         #    resultados = buscar_modelos_regcheck(matriculas)
         elif tipo == "carfax":
             resultados = buscar_modelos_carfax(matriculas)  
+        #elif tipo == "prueba":
+        #    resultados = asyncio.run(buscar_modelos_prueba(matriculas))
         else:
             raise ValueError("Tipo de procesamiento desconocido.")
         

@@ -3,8 +3,18 @@ from matriculas_functions import busqueda_individual_autodoc
 from process_functions import iniciar_proceso
 import threading
 from global_vars import stop_flag 
+import os
+import sys
 
+def resource_path(relative_path):
+    """Obtiene la ruta absoluta de recursos (archivos)"""
+    try:
+        # PyInstaller crea una carpeta temporal y almacena el ejecutable allí
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
 
+    return os.path.join(base_path, relative_path)
 
 # Función para crear la interfaz gráfica
 def crear_interfaz():
@@ -14,7 +24,9 @@ def crear_interfaz():
     root = tk.Tk()
     root.title("Buscador de modelos")
     root.geometry("730x280")
-    root.iconbitmap("./assets/logo.ico")
+    icon_path = resource_path("assets/logo.ico")
+    root.wm_iconbitmap(icon_path)
+    #root.wm_iconbitmap("./assets/logo.ico")
 
     # Segunda columna: Cuadro de texto para mostrar el modelo
     frame_derecho = tk.Frame(root)
@@ -71,26 +83,34 @@ def crear_interfaz():
 
     # Grupo de botones para Carfax
     label_carfax = tk.Label(frame_izquierdo, text="Carfax:")
-    label_carfax.grid(row=4, column=0, padx=10, pady=5, sticky="w")
+    #label_carfax.grid(row=4, column=0, padx=10, pady=5, sticky="w")
     btn_cargar_carfax = tk.Button(
         frame_izquierdo,
         text="Cargar archivo",
         command=lambda: threading.Thread(target=iniciar_proceso, args=("carfax", result_text, btn_stop)).start()
     )
-    btn_cargar_carfax.grid(row=4, column=1, pady=10, padx=10, columnspan=2, sticky="w")
+    #btn_cargar_carfax.grid(row=4, column=1, pady=10, padx=10, columnspan=2, sticky="w")
 
+    # Botón de prueba para iniciar proceso con argumento "prueba"
+    btn_prueba = tk.Button(
+        frame_izquierdo,
+        text="Prueba",
+        command=lambda: threading.Thread(target=iniciar_proceso, args=("prueba", result_text, btn_stop)).start()
+    )
+    #btn_prueba.grid(row=5, column=1, pady=10, padx=10, columnspan=2, sticky="w")
 
+    # Botón de STOP
     btn_stop = tk.Button(
         frame_izquierdo,
         text="STOP",
         bg="red",
         fg="white",
         command=lambda: toggle_stop(),
-        width=8,    # Ajusta el ancho del botón
-        height=2,    # Ajusta la altura del botón
-        font=("Arial", 10, "bold")  # Cambia el tamaño y estilo de la fuente
+        width=8,
+        height=2,
+        font=("Arial", 10, "bold")
     )
-    btn_stop.grid(row=5, column=1, padx=10, pady=5)
+    btn_stop.grid(row=6, column=1, padx=10, pady=5)
     btn_stop.grid_remove()  # Ocultar el botón inicialmente
 
     def toggle_stop():
