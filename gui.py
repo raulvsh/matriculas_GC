@@ -122,7 +122,7 @@ def crear_interfaz():
         btn_stop.grid_remove()  # Ocultar el botón después de pulsarlo
         progress_bar.stop()  # Detener la barra de progreso
         progress_bar.config(mode='determinate')
-        result_text.insert(tk.END, f"Proceso detenido\n")
+        result_text.insert(tk.END, f"Proceso detenido prueba\n")
 
     def on_enter_key(event, entry, result_text, progress_bar):
         btn_buscar.config(relief=tk.SUNKEN)  # Cambia el relieve para simular el botón presionado
